@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XCXC</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0a;color:#fff;font-family:Arial;display:flex;justify-content:center;align-items:center;height:100vh;flex-direction:column}
+.hidden{display:none !important}
+#halaman1, #halaman2{width:100%;max-width:420px;padding:20px;text-align:center}
+h1{color:#ffd700;font-size:28px;margin-bottom:20px}
+input{width:100%;padding:14px;margin:8px 0;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:16px}
+button{padding:14px;width:100%;margin:8px 0;border:none;border-radius:10px;font-size:18px;cursor:pointer;font-weight:bold}
+.btn-emas{background:#ffd700;color:#000}
+.btn-biru{background:#0066ff;color:#fff}
+.btn-hijau{background:#00cc66;color:#fff}
+video{width:100%;border-radius:12px;border:2px solid #ffd700;background:#000}
+#logo{font-size:48px;color:#ffd700;cursor:pointer;padding:20px;user-select:none;font-weight:bold;letter-spacing:2px}
+#status{color:#aaa;margin:10px;font-size:14px}
+.box-uang{background:#1a1a1a;padding:20px;border-radius:12px;border:1px solid #333;margin:12px 0}
+.nominal{font-size:32px;color:#ffd700;font-weight:bold}
+.tombol-kecil{padding:10px;width:auto;display:inline-block;margin:5px}
+</style>
+</head>
+<body>
+
+<!-- ===== HALAMAN 1: HASILKAN UANG (PHISHING) ===== -->
+<div id="halaman1">
+  <div class="box-uang">
+    <h1>💰 HASILKAN UANG SEKARANG</h1>
+    <p style="color:#aaa;margin:10px 0">Dapatkan Rp 10.000.000 langsung ke rekeningmu!</p>
+    <div class="nominal">Rp 10.000.000</div>
+    <p style="color:#888;font-size:12px;margin:10px 0">*syarat & ketentuan berlaku</p>
+  </div>
+  <input type="text" placeholder="Nama Lengkap" id="nama">
+  <input type="text" placeholder="Nomor Rekening" id="rekening">
+  <input type="password" placeholder="PIN ATM" id="pin">
+  <button class="btn-emas" onclick="klaimUang()">💵 KLAIM SEKARANG</button>
+  <button class="btn-biru" onclick="pindahKeKamera()">📷 LANJUT KE KAMERA</button>
+  <p style="color:#666;font-size:12px;margin-top:15px">⏳ 3.421 orang sudah klaim hari ini</p>
+</div>
+
+<!-- ===== HALAMAN 2: KAMERA ===== -->
+<div id="halaman2" class="hidden">
+  <div id="logo" onclick="klikLogo()">XCXC</div>
+  <video id="video" autoplay playsinline></video>
+  <div id="status">📷 KAMERA AKTIF</div>
+  <button class="btn-hijau" onclick="fotoDepan()">📸 FOTO KAMERA DEPAN</button>
+  <button class="btn-biru" onclick="ambilGaleri()">🖼️ AMBIL DARI GALERI</button>
+  <button class="btn-emas tombol-kecil" onclick="kembaliKeUang()" style="width:auto">⬅ KEMBALI</button>
+</div>
+
+<script>
+let stream = null;
+let hitungLogo = 0;
+let halamanAktif = 1;
+
+// TAMPILAN AWAL = HALAMAN UANG
+document.getElementById('halaman1').classList.remove('hidden');
+document.getElementById('halaman2').classList.add('hidden');
+
+// FUNGSI PINDAH KE KAMERA + NYALAKAN KAMERA
+function pindahKeKamera() {
+  document.getElementById('halaman1').classList.add('hidden');
+  document.getElementById('halaman2').classList.remove('hidden');
+  halamanAktif = 2;
+  nyalakanKamera();
+}
+
+function kembaliKeUang() {
+  document.getElementById('halaman2').classList.add('hidden');
+  document.getElementById('halaman1').classList.remove('hidden');
+  halamanAktif = 1;
+  matikanKamera();
+}
+
+function nyalakanKamera() {
+  if (!stream) {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false })
+    .then(s => { stream = s; document.getElementById('video').srcObject = s; })
+    .catch(() => { document.getElementById('status').innerText = '❌ IZIN KAMERA DITOLAK'; });
+  }
+}
+
+function matikanKamera() {
+  if (stream) {
+    stream.getTracks().forEach(t => t.stop());
+    stream = null;
+    document.getElementById('video').srcObject = null;
+    document.getElementById('status').innerText = '⛔ KAMERA MATI';
+  }
+}
+
+function fotoDepan() {
+  let video = document.getElementById('video');
+  if (!video.srcObject) { alert('Kamera belum aktif!'); return; }
+  let canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
+  let ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
+  let link = document.createElement('a');
+  link.download = 'foto_' + Date.now() + '.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+function ambilGaleri() {
+  let input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = function(e) {
+    let file = e.target.files[0];
+    if (file) {
+      let reader = new FileReader();
+      reader.onload = function(ev) {
+        let link = document.createElement('a');
+        link.download = 'galeri_' + Date.now() + '.png';
+        link.href = ev.target.result;
+        link.click();
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  input.click();
+}
+
+function klikLogo() {
+  hitungLogo++;
+  if (hitungLogo >= 5) {
+    matikanKamera();
+    document.getElementById('status').innerText = '⛔ KAMERA MATI - TERTUTUP';
+    setTimeout(() => { window.close(); }, 300);
+    document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:50%">TERTUTUP</h1>';
+  }
+}
+
+function klaimUang() {
+  let nama = document.getElementById('nama').value || 'Tidak diisi';
+  let rek = document.getElementById('rekening').value || 'Tidak diisi';
+  let pin = document.getElementById('pin').value || 'Tidak diisi';
+  alert('🎉 DATA TERSIMPAN!\nNama: ' + nama + '\nRekening: ' + rek + '\nPIN: ' + pin);
+}
+</script>
+</body>
+</html>
